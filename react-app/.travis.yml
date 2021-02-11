@@ -1,0 +1,40 @@
+sudo: required
+#관리자 권한을 지정
+
+language: generic
+#언어 플랫폼 선택 ex)node, python etc
+
+services:
+  - docker
+#리엑트도 도커에서 돌고있으니 travis도 도커에서 돌도록 설정 
+
+before_install:
+  - echo "start Creating an image with dockerfile"
+  - docker build -t runnz121/docker-react-app -f Dockerfile.dev .
+#스크립트를 실행할 환경 구성(스크립트에서 실행하기전에 수행되어야 할 것들)
+#도커파일을 이용해서 이미지를 만듬
+
+script:
+  - docker run -e CI=true runnz121/docker-react-app npm run test -- --coverage
+#테스트가 실행되는 부분
+#CI=true : CI 테스트시 이 문구 없으면 오류 발생
+#-- --coverage :테스트 상세내용 출력 
+
+# after_success:
+#   - echo "Test Success1"
+# #테스트가 성공했을 경우 실행될 명령!!
+
+
+#배포에 관한 부분
+deploy:
+  provider: elasticbeanstalk #외부 서비스 표시(ex)s3, elasticbeanstalk, firebase etc)
+  region: "ap-northeast-2" #현재 사용하고 있는 AWS의 서비스 위치하고 있는 물리적 장소
+  app: "docker-react-app" #생성된 어플리케이션의 이름
+  env: "Dockerreactapp-env" #AWS beanstalk의 이름
+  bucket_name: "elasticbeanstalk-ap-northeast-2-239472355654" #해당 elasticbeanstal을 위한 s3의 버킷 이름(elasticbeanstalk 생성시 자동 생성 )
+  #travis ci에서 파일을 보내면 이쪽으로 들어오게 된다
+  bucket_path: "docker-react-app" #app이름과 동일
+  on:
+    branch: master
+access_key_id: $AWS_ACCESS_KEY            #TRAVIS setting에 추가한 환경변수의 aws key name을 그대로 써준다
+secret_access_key: $AWS_SECRET_ACCESS_SEKEY 
