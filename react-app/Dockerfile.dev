@@ -1,0 +1,23 @@
+#개발화경을 위한 도커파일 작성
+
+FROM node:alpine
+
+WORKDIR /usr/src/app
+
+COPY package.json ./
+
+RUN npm install 
+#여기서 이미 node module이 빌드 됨으로 로컬에선 node module이 필요 없다
+#따라서 도커를 이용할시 로컬 node module을 지우자
+
+COPY ./ ./
+
+CMD ["npm","run", "start"]
+
+#docker build -f Dockerfile.dev >> 이미지를 빌드할때 쓰일 도커파일을 임의로 지정해준다 
+#docker run -it -p 3000:3000 runnz121/docker-react-app 포트 맵핑 필요
+#맥 : -v $(pwd):/usr/src/app  윈도우 : -v %cd%:/usr/src/app
+
+#volume은 copy와 다르게 컨테이너가 로컬파일을 참조하는 것 그런데 현재 로컬에 node module이 없음으로 
+#볼륨으로 생성시 node_module을 참조하지 말라고 선언 
+#docker run -it -p 3000:3000 -v /usr/src/app/node_modules -v %cd%:/usr/src/app runnz121/docker-react-app
